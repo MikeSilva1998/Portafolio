@@ -62,9 +62,22 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--w);
 .type-cursor{display:inline-block;width:2px;height:.8em;background:var(--c);margin-left:3px;vertical-align:middle;animation:blinkcur .9s step-start infinite}
 @keyframes blinkcur{50%{opacity:0}}
 
+/* ── línea de escaneo en loop ── */
+.scan-line{position:absolute;left:0;right:0;height:2px;top:-2%;background:linear-gradient(90deg,transparent,rgba(0,212,255,.9),transparent);box-shadow:0 0 14px 2px rgba(0,212,255,.55);pointer-events:none;z-index:2;mix-blend-mode:screen;animation:scan-move 6s linear infinite}
+@keyframes scan-move{0%{top:-2%}100%{top:102%}}
+
+/* ── glow en la card activa (además del tilt) ── */
+.tilt-glow{box-shadow:0 0 22px 3px rgba(0,212,255,.35);border-color:rgba(0,212,255,.65)}
+
+/* ── punto de estado activo ── */
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);margin-left:auto;position:relative;animation:status-pulse 1.8s ease-in-out infinite}
+.status-dot::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:1px solid var(--green);opacity:.6;animation:status-ring 1.8s ease-out infinite}
+@keyframes status-pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.15);opacity:.85}}
+@keyframes status-ring{0%{transform:scale(.6);opacity:.7}100%{transform:scale(1.8);opacity:0}}
+
 /* ── PÁGINA / HOJA ── */
 .cv-page{
-  position:relative;z-index:1;
+  position:relative;z-index:1;overflow:hidden;
   max-width:720px;margin:1.5rem auto;border-radius:10px;
   box-shadow:0 0 20px 20px rgba(0,247,255,.062),0 0 0 1px rgba(0,213,255,.863);
   padding:1rem 2rem 1rem;
@@ -126,7 +139,7 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--w);
 .stat-l{display:block;font-size:.57rem;color:var(--g);text-transform:uppercase;letter-spacing:1px;margin-top:.12rem}
 
 /* Job cards */
-.job-card{background:var(--card);border:1px solid var(--cardbdr);border-radius:6px;padding:.8rem .8rem .8rem .8rem;margin-bottom:.75rem;transition:border-color .22s,transform .12s ease-out}
+.job-card{background:var(--card);border:1px solid var(--cardbdr);border-radius:6px;padding:.8rem .8rem .8rem .8rem;margin-bottom:.75rem;transition:border-color .22s,transform .12s ease-out,box-shadow .25s ease-out}
 .job-card:hover{border-color:rgba(0,212,255,.3)}
 .job-co{font-size:1.1rem;font-weight:700;text-transform:uppercase;color:var(--w);margin-bottom:.2rem}
 .job-meta{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.32rem;margin-bottom:.65rem}
@@ -139,7 +152,7 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--w);
 
 /* Skills — barras */
 .sgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:.8rem}
-.skcol{background:var(--card);border:1px solid var(--cardbdr);border-radius:6px;padding:.8rem .8rem .1rem .8rem;transition:border-color .25s,transform .12s ease-out}
+.skcol{background:var(--card);border:1px solid var(--cardbdr);border-radius:6px;padding:.8rem .8rem .1rem .8rem;transition:border-color .25s,transform .12s ease-out,box-shadow .25s ease-out}
 .skcol:hover{border-color:rgba(0,212,255,.3)}
 .sktitle{font-size:.62rem;letter-spacing:2px;text-transform:uppercase;color:#fff;margin-bottom:.8rem;padding-bottom:.5rem;border-bottom:1px solid var(--cardbdr)}
 .ski{margin-bottom:.7rem}
@@ -149,7 +162,7 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--w);
 .skfill{height:100%;background:linear-gradient(90deg,var(--c),rgba(0,186,233,.36));border-radius:2px;width:0;transition:width 1.2s cubic-bezier(.4,0,.2,1);box-shadow:0 0 6px var(--cglow)}
 
 /* Education */
-.edu-card{background:var(--card);border:1px solid var(--cardbdr);border-radius:6px;padding:.8rem .8rem .8rem .8rem;transition:border-color .22s,transform .12s ease-out}
+.edu-card{background:var(--card);border:1px solid var(--cardbdr);border-radius:6px;padding:.8rem .8rem .8rem .8rem;transition:border-color .22s,transform .12s ease-out,box-shadow .25s ease-out}
 .edu-card:hover{border-color:rgba(0,212,255,.3)}
 .edu-item{margin-bottom:.8rem;padding-bottom:.75rem;border-bottom:1px solid rgba(255,255,255,.05)}
 .edu-item:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
@@ -159,7 +172,7 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--w);
 
 /* References */
 .ref-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.75rem}
-.ref-card{background:var(--card);border:1px solid var(--cardbdr);border-radius:6px;padding:.7rem .8rem .4rem .8rem;transition:border-color .22s,transform .12s ease-out}
+.ref-card{background:var(--card);border:1px solid var(--cardbdr);border-radius:6px;padding:.7rem .8rem .4rem .8rem;transition:border-color .22s,transform .12s ease-out,box-shadow .25s ease-out}
 .ref-card:hover{border-color:rgba(0,212,255,.3)}
 .ref-name{font-size:.85rem;font-weight:600;color:var(--w);margin-bottom:.1rem}
 .ref-co{font-size:.61rem;color:var(--c);text-transform:uppercase;letter-spacing:1px;margin-bottom:.5rem}
@@ -264,6 +277,7 @@ body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--w);
 <svg class="corner-trace corner-tr" viewBox="0 0 64 64"><path d="M4 0 L4 18 L20 18 L20 34"/><circle cx="4" cy="0" r="2.3"/><circle cx="20" cy="34" r="2.3"/></svg>
 <svg class="corner-trace corner-bl" viewBox="0 0 64 64"><path d="M4 0 L4 18 L20 18 L20 34"/><circle cx="4" cy="0" r="2.3"/><circle cx="20" cy="34" r="2.3"/></svg>
 <svg class="corner-trace corner-br" viewBox="0 0 64 64"><path d="M4 0 L4 18 L20 18 L20 34"/><circle cx="4" cy="0" r="2.3"/><circle cx="20" cy="34" r="2.3"/></svg>
+<div class="scan-line"></div>
 <div class="cv-wrap">
 
 <aside class="cv-sidebar">
@@ -328,6 +342,7 @@ stroke-linecap="round" stroke-linejoin="round">
     <div class="loc-row">
       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
       Pátzcuaro, Michoacán
+      <span class="status-dot" title="Disponible"></span>
     </div>
   </div>
 </aside>
@@ -782,7 +797,7 @@ function initSideNav(){
 }
 initSideNav();
 
-// ── barra de progreso de scroll + parallax ──
+// ── barra de progreso de scroll + parallax de fondo ──
 function updateScrollProgress(){
   scrollY=window.scrollY;
   const sp=document.getElementById('scrollProgress');
@@ -794,22 +809,42 @@ function updateScrollProgress(){
 window.addEventListener('scroll',updateScrollProgress,{passive:true});
 updateScrollProgress();
 
-// ── tilt 3D en cards + botones magnéticos (solo con mouse) ──
+// ── tilt 3D + glow + profundidad entre cards + botones magnéticos (solo con mouse) ──
 if(window.matchMedia('(pointer:fine)').matches){
   const TILT_SEL='.job-card,.skcol,.ref-card,.edu-card';
   const MAG_SEL='.fab,.sb-icon,.rchip,.tool-tile';
   let tiltActive=null;
+  const parallaxY=new Map();
+
+  function applyCardTransform(el){
+    const py=parallaxY.get(el)||0;
+    const rot=el===tiltActive?(el._rot||''):'';
+    el.style.transform=`translateY(${py}px) ${rot}`.trim();
+  }
+  function updateParallax(){
+    document.querySelectorAll(TILT_SEL).forEach(el=>{
+      const r=el.getBoundingClientRect();
+      const offset=(r.top+r.height/2-window.innerHeight/2)*0.05;
+      parallaxY.set(el,offset);
+      applyCardTransform(el);
+    });
+  }
+  window.addEventListener('scroll',updateParallax,{passive:true});
+  updateParallax();
+
   document.addEventListener('pointermove',e=>{
     const card=e.target.closest(TILT_SEL);
     if(card!==tiltActive){
-      if(tiltActive)tiltActive.style.transform='';
+      if(tiltActive){tiltActive._rot='';tiltActive.classList.remove('tilt-glow');applyCardTransform(tiltActive);}
       tiltActive=card;
+      if(tiltActive)tiltActive.classList.add('tilt-glow');
     }
     if(card){
       const r=card.getBoundingClientRect();
       const px=(e.clientX-r.left)/r.width-.5;
       const py=(e.clientY-r.top)/r.height-.5;
-      card.style.transform=`perspective(700px) rotateX(${(-py*6).toFixed(2)}deg) rotateY(${(px*6).toFixed(2)}deg)`;
+      card._rot=`perspective(700px) rotateX(${(-py*6).toFixed(2)}deg) rotateY(${(px*6).toFixed(2)}deg)`;
+      applyCardTransform(card);
     }
     document.querySelectorAll(MAG_SEL).forEach(el=>{
       const r=el.getBoundingClientRect();
