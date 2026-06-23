@@ -1,0 +1,618 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Miguel Angel Silva Soto</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#020202;--surf:#170d0d;
+  --c:#12d0f7;--cdim:rgba(0,205,247,.12);--cglow:rgb(59,143,160);
+  --w:#fff;--g:#ffffff;--bdr:rgba(0,204,255,.815);
+  --card:rgba(4,207,247,.082);--cardbdr:rgba(0,213,255,.863);
+  --green:#00e676;--amber:#ffb020;
+}
+*{margin:0;padding:0;box-sizing:border-box}html{scroll-behavior:smooth}
+body{font-family:'Space Grotesk',sans-serif;background:var(--bg);color:var(--w);overflow-x:hidden;font-size:30px}
+@media(pointer:fine){*{cursor:none!important}}
+#cur,#cdot{position:fixed;border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%)}
+#cur{width:22px;height:22px;border:1.5px solid var(--c);box-shadow:0 0 10px var(--cglow);transition:transform .12s,background .2s}
+#cdot{width:5px;height:5px;background:var(--c)}
+#bgc{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+/* ── barra de progreso de scroll ── */
+#scrollProgress{position:fixed;top:0;left:0;height:3px;width:0%;background:var(--c);box-shadow:0 0 10px var(--cglow);z-index:120;transition:width .1s linear}
+
+/* ── navegación lateral con indicador activo ── */
+.side-nav{position:fixed;right:16px;top:50%;transform:translateY(-50%);display:flex;flex-direction:column;gap:16px;z-index:90}
+.nav-dot{width:9px;height:9px;border-radius:50%;background:rgba(0,212,255,.22);border:1px solid var(--cardbdr);position:relative;transition:all .25s;display:block}
+.nav-dot::after{content:attr(title);position:absolute;right:18px;top:50%;transform:translateY(-50%);font-size:.58rem;letter-spacing:1px;text-transform:uppercase;color:var(--c);opacity:0;white-space:nowrap;transition:opacity .2s;pointer-events:none;background:rgba(0,0,0,.6);padding:.15rem .4rem;border-radius:3px}
+.nav-dot:hover::after{opacity:1}
+.nav-dot.active{background:var(--c);box-shadow:0 0 10px var(--cglow);transform:scale(1.4)}
+@media(max-width:768px){.side-nav{display:none}}
+
+/* ── reveal al hacer scroll ── */
+.reveal{opacity:0;transform:translateY(28px);transition:opacity .7s cubic-bezier(.4,0,.2,1),transform .7s cubic-bezier(.4,0,.2,1)}
+.reveal.visible{opacity:1;transform:translateY(0)}
+
+/* ── glitch en el nombre ── */
+@keyframes glitch{
+  0%{clip-path:inset(0 0 0 0);transform:translate(0)}
+  10%{clip-path:inset(10% 0 60% 0);transform:translate(-2px,1px)}
+  20%{clip-path:inset(50% 0 20% 0);transform:translate(2px,-1px)}
+  30%{clip-path:inset(20% 0 50% 0);transform:translate(-1px,2px)}
+  40%{clip-path:inset(60% 0 5% 0);transform:translate(1px,-2px)}
+  50%{clip-path:inset(0 0 0 0);transform:translate(0)}
+  100%{clip-path:inset(0 0 0 0);transform:translate(0)}
+}
+
+/* ── trazos de circuito en las esquinas ── */
+.corner-trace{position:absolute;width:64px;height:64px;pointer-events:none;opacity:.55;z-index:0}
+.corner-trace path{fill:none;stroke:var(--c);stroke-width:2;stroke-dasharray:90;stroke-dashoffset:90;animation:draw-trace 1.6s ease-out forwards;animation-delay:.3s}
+.corner-trace circle{fill:var(--c);opacity:0;animation:fade-in-via .4s ease-out forwards;animation-delay:1.7s}
+@keyframes draw-trace{to{stroke-dashoffset:0}}
+@keyframes fade-in-via{to{opacity:1}}
+.corner-tl{top:-1px;left:-1px}
+.corner-tr{top:-1px;right:-1px;transform:scaleX(-1)}
+.corner-bl{bottom:-1px;left:-1px;transform:scaleY(-1)}
+.corner-br{bottom:-1px;right:-1px;transform:scale(-1,-1)}
+
+/* ── cursor de "escritura" en el subtítulo ── */
+.type-cursor{display:inline-block;width:2px;height:.8em;background:var(--c);margin-left:3px;vertical-align:middle;animation:blinkcur .9s step-start infinite}
+@keyframes blinkcur{50%{opacity:0}}
+
+/* ── línea de escaneo en loop ── */
+.scan-line{position:absolute;left:0;right:0;height:2px;top:-2%;background:linear-gradient(90deg,transparent,rgba(0,212,255,.9),transparent);box-shadow:0 0 14px 2px rgba(0,212,255,.55);pointer-events:none;z-index:2;mix-blend-mode:screen;animation:scan-move 6s linear infinite}
+@keyframes scan-move{0%{top:-2%}100%{top:102%}}
+
+/* ── onda al hacer clic ── */
+.click-ripple{position:fixed;border-radius:50%;pointer-events:none;z-index:9998;border:1.5px solid var(--c);box-shadow:0 0 14px var(--cglow);transform:translate(-50%,-50%);animation:ripple-expand .65s cubic-bezier(.2,.6,.3,1) forwards}
+.click-ripple.inner{border-width:1px;border-color:rgba(0,212,255,.6);animation-duration:.5s;animation-delay:.05s}
+@keyframes ripple-expand{0%{width:0;height:0;opacity:.95}100%{width:150px;height:150px;opacity:0}}
+.tilt-glow{box-shadow:0 0 22px 3px rgba(0,212,255,.35);border-color:rgba(0,212,255,.65)}
+
+/* ── punto de estado activo ── */
+.status-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);margin-left:auto;position:relative;animation:status-pulse 1.8s ease-in-out infinite}
+.status-dot::after{content:'';position:absolute;inset:-4px;border-radius:50%;border:1px solid var(--green);opacity:.6;animation:status-ring 1.8s ease-out infinite}
+@keyframes status-pulse{0%,100%{transform:scale(1);opacity:1}50%{transform:scale(1.15);opacity:.85}}
+@keyframes status-ring{0%{transform:scale(.6);opacity:.7}100%{transform:scale(1.8);opacity:0}}
+
+/* ── PÁGINA / HOJA ── */
+.cv-page{
+  position:relative;z-index:1;overflow:hidden;
+  max-width:720px;margin:1.5rem auto;border-radius:10px;
+  box-shadow:0 0 20px 20px rgba(0,247,255,.062),0 0 0 1px rgba(0,213,255,.863);
+  padding:1rem 2rem 1rem;
+}
+
+/* ── LAYOUT ── */
+.cv-wrap{display:grid;grid-template-columns:250px 1fr;position:relative;z-index:1}
+
+/* ── SIDEBAR ── */
+.sb-photo{width:100%;aspect-ratio:1;overflow:hidden;border:1px solid var(--cardbdr);border-radius:10px;margin-bottom:2rem;margin-top:1rem}
+.sb-photo img{width:100%;height:100%;object-fit:cover;display:block}
+
+.disc-chips-sb{display:flex;flex-direction:column;gap:.28rem;margin-bottom:1.1rem}
+.rchip{padding:.25rem .65rem;border:1px solid var(--bdr);border-radius:3px;font-size:.65rem;letter-spacing:1px;text-transform:uppercase;color:var(--c);background:var(--cdim);transition:all .18s;user-select:none}
+.rchip:hover{background:rgba(0,213,255,.2);border-color:var(--c)}
+.rchip.active{background:var(--c);color:#000;border-color:var(--c);font-weight:700}
+
+.sb-section{margin-bottom:1.15rem}
+.sb-label{display:block;font-size:.57rem;letter-spacing:2.5px;text-transform:uppercase;color:var(--c);border-left:2px solid var(--c);padding-left:.4rem;margin-bottom:.6rem;font-weight:600}
+
+.sb-contacts{display:flex;gap:.3rem;flex-wrap:wrap}
+.sb-icon{width:40px;height:40px;border:1px solid var(--cardbdr);border-radius:5px;display:flex;align-items:center;justify-content:center;color:var(--g);text-decoration:none;transition:all .2s;background:rgba(0,212,255,.02);flex-shrink:4}
+.sb-icon:hover{border-color:var(--c);color:var(--c);box-shadow:0 0 8px var(--cdim)}
+.sb-icon svg,.sb-icon img{width:21px;height:21px;object-fit:contain}
+
+.lang-row{display:flex;justify-content:space-between;font-size:.77rem;color:var(--g);padding:.23rem 0;border-bottom:1px solid rgba(0,217,255,.048)}
+.lang-level{color:rgba(255,255,255,.836);font-size:.7rem}
+.loc-row{font-size:.77rem;color:var(--g);display:flex;align-items:center;gap:.4rem}
+.loc-row svg{flex-shrink:0;opacity:.45}
+
+/* ── MAIN ── */
+.cv-main{padding:1rem 0 0 2rem;min-height:100vh}
+
+.hero-card{background:var(--card);border:1px solid var(--cardbdr);border-radius:6px;padding:1.5rem .0rem 1rem .8rem;margin-bottom:1.4rem}
+.disc-cur{font-size:.62rem;letter-spacing:3px;text-transform:uppercase;color:var(--c);margin-bottom:.6rem;font-weight:600;display:flex;align-items:center;gap:.42rem}
+.disc-cur::before{content:'';display:inline-block;width:3px;height:13px;background:var(--c);border-radius:1px;flex-shrink:0}
+.big-name{font-size:clamp(2.62rem,4.5vw,5rem);font-weight:900;text-transform:uppercase;line-height:.9;letter-spacing:-1.5px;color:var(--w);position:relative}
+.big-name:hover{animation:glitch .3s linear;text-shadow:2px 0 var(--c),-2px 0 #ff0080}
+
+.hero-lead{font-size:.83rem;color:var(--g);line-height:1.75;margin:.9rem .8rem .9rem 0;max-width:520px}
+.hero-btns{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.2rem}
+.hero-btn{display:inline-flex;align-items:center;gap:.4rem;padding:.55rem 1.05rem;border-radius:100px;font-size:.68rem;font-weight:700;letter-spacing:.8px;text-transform:uppercase;text-decoration:none;transition:transform .15s ease-out,box-shadow .3s;font-family:'Space Grotesk',sans-serif}
+.hero-btn.solid{background:var(--c);color:#000;box-shadow:0 0 4px var(--cglow)}
+.hero-btn.solid:hover{transform:translateY(-2px);box-shadow:0 0 24px var(--cglow)}
+.hero-btn.ghost{background:transparent;color:var(--c);border:1px solid var(--cardbdr)}
+.hero-btn.ghost:hover{border-color:var(--c);box-shadow:0 0 14px var(--cdim);transform:translateY(-2px)}
+
+.mc-label{display:block;font-size:.59rem;letter-spacing:2.5px;text-transform:uppercase;color:var(--c);border-left:2px solid var(--c);padding-left:.42rem;margin-bottom:.85rem;font-weight:600}
+.mc-section{margin-bottom:1.55rem}
+.mc-card{background:var(--card);border:1px solid var(--cardbdr);border-radius:6px;padding:.8rem .8rem .8rem .8rem}
+
+.about-txt{color:rgba(255,255,255,.836);line-height:1.8;font-size:.85rem}
+.about-txt em{color:var(--c);font-style:normal}
+.about-txt b{color:var(--w)}
+.stats-row{display:grid;grid-template-columns:repeat(2,1fr);gap:.65rem;margin-top:.95rem;padding-top:.85rem;border-top:1px solid var(--cardbdr)}
+.stat-v{display:block;font-size:1.5rem;font-weight:700;color:var(--c);line-height:1}
+.stat-l{display:block;font-size:.57rem;color:var(--g);text-transform:uppercase;letter-spacing:1px;margin-top:.12rem}
+
+/* Tarjetas de empresa (= job-card del CV) */
+.job-card{background:var(--card);border:1px solid var(--cardbdr);border-radius:6px;padding:.8rem .8rem .8rem .8rem;margin-bottom:.75rem;transition:border-color .22s,transform .12s ease-out,box-shadow .25s ease-out}
+.job-card:hover{border-color:rgba(0,212,255,.3)}
+.job-co{font-size:1.1rem;font-weight:700;text-transform:uppercase;color:var(--w);margin-bottom:.2rem}
+.job-meta{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:.32rem;margin-bottom:.65rem}
+.job-role{font-size:.77rem;color:var(--g)}
+.job-date{font-size:.66rem;border:1px solid var(--green);color:var(--green);padding:.11rem .52rem;border-radius:100px;white-space:nowrap}
+.job-date.build{border-color:var(--amber);color:var(--amber)}
+.job-date.phase{border-color:var(--c);color:var(--c)}
+.job-list{list-style:none}
+.job-list li{color:rgba(255,255,255,.836);font-size:.81rem;line-height:1.65;padding-left:1.1rem;position:relative;margin-bottom:.26rem}
+.job-list li::before{content:'/';position:absolute;left:0;color:var(--c);font-weight:700}
+.job-foot{display:flex;justify-content:flex-end;margin-top:.6rem}
+.job-social{display:inline-flex;align-items:center;gap:.4rem;padding:.32rem .65rem .32rem .5rem;border-radius:100px;border:1px solid var(--cardbdr);color:var(--g);text-decoration:none;font-size:.62rem;letter-spacing:.5px;text-transform:uppercase;transition:all .2s;background:rgba(0,212,255,.02)}
+.job-social:hover{border-color:var(--c);color:var(--c);box-shadow:0 0 8px var(--cdim)}
+.job-social svg{width:14px;height:14px;flex-shrink:0}
+
+/* Skills — barras (sidebar) */
+.ski{margin-bottom:.6rem}
+.skh{display:flex;justify-content:space-between;margin-bottom:.22rem;font-size:.68rem}
+.skn{color:var(--w)}.skp{color:#fff;font-size:.62rem;opacity:.75}
+.skbar{height:4px;background:rgba(255,255,255,.06);border-radius:2px;overflow:hidden}
+.skfill{height:100%;background:linear-gradient(90deg,var(--c),rgba(0,186,233,.36));border-radius:2px;width:0;transition:width 1.2s cubic-bezier(.4,0,.2,1);box-shadow:0 0 6px var(--cglow)}
+
+/* Education (ahora en sidebar) */
+.edu-card-sb{padding-top:.1rem}
+.edu-item-sb{margin-bottom:.75rem;padding-bottom:.7rem;border-bottom:1px solid rgba(255,255,255,.05)}
+.edu-item-sb:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
+.edu-deg-sb{font-size:.72rem;font-weight:700;color:var(--w);text-transform:uppercase;line-height:1.25}
+.edu-meta-sb{font-size:.6rem;color:var(--c);margin:.18rem 0}
+.edu-school-sb{font-size:.66rem;color:var(--g);line-height:1.3}
+
+/* Cómo ayudo a las PYMEs (sidebar) */
+.ayuda-card-sb{padding-top:.1rem}
+.ayuda-item-sb{margin-bottom:.7rem;padding-bottom:.65rem;border-bottom:1px solid rgba(255,255,255,.05)}
+.ayuda-item-sb:last-child{margin-bottom:0;padding-bottom:0;border-bottom:none}
+.ayuda-title-sb{font-size:.7rem;font-weight:700;color:var(--w);text-transform:uppercase;line-height:1.25}
+.ayuda-desc-sb{font-size:.64rem;color:var(--g);line-height:1.45;margin-top:.2rem}
+
+/* Confianza y resultados (= ref-grid del CV) */
+.ref-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:.75rem}
+.ref-card{background:var(--card);border:1px solid var(--cardbdr);border-radius:6px;padding:.7rem .8rem .6rem .8rem;transition:border-color .22s,transform .12s ease-out,box-shadow .25s ease-out}
+.ref-card:hover{border-color:rgba(0,212,255,.3)}
+.ref-name{font-size:.85rem;font-weight:600;color:var(--w);margin-bottom:.35rem}
+.ref-info{font-size:.73rem;color:var(--g);line-height:1.85}
+.ref-info b{color:var(--c)}
+
+/* FAB */
+.fab{position:fixed;bottom:1.5rem;right:1.5rem;z-index:50;display:flex;align-items:center;gap:.5rem;padding:.6rem 1.1rem;background:var(--c);color:#000;font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;border-radius:100px;border:none;box-shadow:0 0 4px var(--cglow);transition:transform .15s ease-out,box-shadow .3s;font-family:'Space Grotesk',sans-serif}
+.fab:hover{transform:translateY(-3px);box-shadow:0 0 28px var(--cglow)}
+.cv-footer{text-align:center;padding:1.4rem;color:var(--g);font-size:.68rem;border-top:1px solid var(--cardbdr);letter-spacing:2px;text-transform:uppercase;margin-top:.5rem}
+
+#proy-list,#conf-list{transition:opacity .23s}
+.fading{opacity:0!important}
+
+/* ── MOBILE: Se mantienen las dos columnas, JS aplica zoom ── */
+@media(max-width:768px){
+  body{overflow-x:hidden}
+  .cv-main{padding:1rem 0 0 1rem;min-height:100vh}
+  .cv-page{margin:.25rem auto;border-radius:6px;padding:.2px 25px 1px 25px}
+  .sb-icon{width:50px;height:50px;border:1px solid var(--cardbdr);border-radius:5px;display:flex;align-items:center;justify-content:center;color:var(--g);text-decoration:none;transition:all .2s;background:rgba(0,212,255,.02);flex-shrink:4}
+  .sb-icon svg,.sb-icon img{width:25px;height:25px;object-fit:contain}
+  .rchip{padding:.3rem .3rem .3rem .3rem;border:1px solid var(--bdr);border-radius:3px;font-size:.57rem;letter-spacing:1px;text-transform:uppercase;color:var(--c);background:var(--cdim);transition:all .18s;user-select:none}
+  .hero-card{background:var(--card);border:1px solid var(--cardbdr);border-radius:6px;padding:.6rem .0rem .6rem .8rem;margin-bottom:1.4rem}
+  .mc-card{background:var(--card);border:1px solid var(--cardbdr);border-radius:6px;padding:.7rem .8rem .7rem .8rem}
+  .job-card{background:var(--card);border:1px solid var(--cardbdr);border-radius:6px;padding:.7rem .6rem .6rem .8rem;margin-bottom:.75rem;transition:border-color .22s}
+  .edu-card{background:var(--card);border:1px solid var(--cardbdr);border-radius:6px;padding:.7rem .6rem .7rem .8rem}
+  .ref-card{background:var(--card);border:1px solid var(--cardbdr);border-radius:6px;padding:.5rem .6rem .4rem .8rem;transition:border-color .22s}
+  .corner-trace{width:30px;height:30px}
+}
+
+@media print{
+  body>*{display:none!important}
+}
+</style>
+</head>
+<body>
+<div id="cur"></div><div id="cdot"></div>
+<canvas id="bgc"></canvas>
+<div id="scrollProgress"></div>
+<nav class="side-nav" id="sideNav">
+  <a href="#sec-about" class="nav-dot" data-target="sec-about" title="Sobre mí"></a>
+  <a href="#sec-inovit" class="nav-dot" data-target="sec-inovit" title="Inovit"></a>
+  <a href="#sec-conf" class="nav-dot" data-target="sec-conf" title="Confianza"></a>
+</nav>
+
+<div class="cv-page">
+<svg class="corner-trace corner-tl" viewBox="0 0 64 64"><path d="M4 0 L4 18 L20 18 L20 34"/><circle cx="4" cy="0" r="2.3"/><circle cx="20" cy="34" r="2.3"/></svg>
+<svg class="corner-trace corner-tr" viewBox="0 0 64 64"><path d="M4 0 L4 18 L20 18 L20 34"/><circle cx="4" cy="0" r="2.3"/><circle cx="20" cy="34" r="2.3"/></svg>
+<svg class="corner-trace corner-bl" viewBox="0 0 64 64"><path d="M4 0 L4 18 L20 18 L20 34"/><circle cx="4" cy="0" r="2.3"/><circle cx="20" cy="34" r="2.3"/></svg>
+<svg class="corner-trace corner-br" viewBox="0 0 64 64"><path d="M4 0 L4 18 L20 18 L20 34"/><circle cx="4" cy="0" r="2.3"/><circle cx="20" cy="34" r="2.3"/></svg>
+<div class="scan-line"></div>
+<div class="cv-wrap">
+
+<aside class="cv-sidebar">
+  <div class="sb-photo">
+    <img src="https://i.imgur.com/PMCmdUz.png" alt="Miguel Angel Silva Soto" onerror="this.style.display='none'">
+  </div>
+  <div class="sb-section">
+    <span class="sb-label">Contacto</span>
+    <div class="sb-contacts">
+      <a href="tel:+524341366690" class="sb-icon" title="Teléfono">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6.15-6.15A19.79 19.79 0 0 1 2 4.18 2 2 0 0 1 4 2h3a2 2 0 0 1 2 1.72c.12.81.37 1.6.73 2.35a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.73-1.19a2 2 0 0 1 2.11-.45c.75.36 1.54.61 2.35.73A2 2 0 0 1 22 16.92z"/></svg>
+      </a>
+      <a href="mailto:miguel.dev.1998@gmail.com" class="sb-icon" title="Email">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      </a>
+      <a href="https://www.instagram.com/mike.dev.1998/" target="_blank" class="sb-icon" title="Instagram">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg>
+      </a>
+      <a href="https://www.linkedin.com/in/3viltime" target="_blank" class="sb-icon" title="LinkedIn">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="sb-section">
+    <span class="sb-label">Cómo Ayudo a las PYMEs</span>
+    <div class="ayuda-card-sb">
+      <div class="ayuda-item-sb">
+        <div class="ayuda-title-sb">Diagnóstico Empresarial</div>
+        <div class="ayuda-desc-sb">Analizamos procesos, detectamos cuellos de botella y encontramos oportunidades de mejora.</div>
+      </div>
+      <div class="ayuda-item-sb">
+        <div class="ayuda-title-sb">Automatización</div>
+        <div class="ayuda-desc-sb">Reducimos tareas manuales mediante automatización e inteligencia artificial.</div>
+      </div>
+      <div class="ayuda-item-sb">
+        <div class="ayuda-title-sb">Ventas y Marketing</div>
+        <div class="ayuda-desc-sb">Diseñamos sistemas para mejorar seguimiento, comunicación y conversión.</div>
+      </div>
+      <div class="ayuda-item-sb">
+        <div class="ayuda-title-sb">Gestión y Operaciones</div>
+        <div class="ayuda-desc-sb">Estructuramos procesos, documentación y flujos internos para facilitar el crecimiento.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sb-section">
+    <span class="sb-label">Educación</span>
+    <div class="edu-card-sb">
+      <div class="edu-item-sb">
+        <div class="edu-deg-sb">Ingeniería en Videojuegos</div>
+        <div class="edu-meta-sb">2016 — 2020</div>
+        <div class="edu-school-sb">Universidad de Morelia · Titulado</div>
+      </div>
+      <div class="edu-item-sb">
+        <div class="edu-deg-sb">Arte Digital y VFX</div>
+        <div class="edu-meta-sb">2022 — 2024</div>
+        <div class="edu-school-sb">Universidad de Morelia · Graduado</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sb-section">
+    <span class="sb-label">Skills</span>
+    <div class="ski"><div class="skh"><span class="skn">Optimización de Procesos</span><span class="skp">90%</span></div><div class="skbar"><div class="skfill" data-w="90"></div></div></div>
+    <div class="ski"><div class="skh"><span class="skn">IA Aplicada a Negocios</span><span class="skp">85%</span></div><div class="skbar"><div class="skfill" data-w="85"></div></div></div>
+    <div class="ski"><div class="skh"><span class="skn">Diseño de Sistemas</span><span class="skp">88%</span></div><div class="skbar"><div class="skfill" data-w="88"></div></div></div>
+    <div class="ski"><div class="skh"><span class="skn">UX / Experiencia de Usuario</span><span class="skp">90%</span></div><div class="skbar"><div class="skfill" data-w="90"></div></div></div>
+    <div class="ski"><div class="skh"><span class="skn">Gestión y Documentación</span><span class="skp">80%</span></div><div class="skbar"><div class="skfill" data-w="80"></div></div></div>
+  </div>
+
+  <div class="sb-section">
+    <span class="sb-label">Idiomas</span>
+    <div class="lang-row"><span>Español</span><span class="lang-level">Nativo</span></div>
+    <div class="lang-row"><span>Inglés</span><span class="lang-level">Pre-intermedio</span></div>
+  </div>
+  <div class="sb-section">
+    <span class="sb-label">Ubicación</span>
+    <div class="loc-row">
+      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      Pátzcuaro, Michoacán
+      <span class="status-dot" title="Disponible"></span>
+    </div>
+  </div>
+</aside>
+
+<main class="cv-main">
+  <div class="hero-card reveal">
+    <h1 class="big-name">MIGUEL ANGEL<br>SILVA SOTO</h1>
+    <br>
+    <div class="disc-cur" id="disc-cur"></div>
+    <p class="hero-lead">Ayudo a pequeñas y medianas empresas a identificar oportunidades de mejora en ventas, marketing, operaciones y gestión para convertir procesos manuales en sistemas más eficientes mediante tecnología y automatización.</p>
+    <div class="hero-btns">
+      <a href="#sec-inovit" class="hero-btn ghost">Conocer Inovit</a>
+    </div>
+  </div>
+
+  <div class="mc-section reveal" id="sec-about">
+    <span class="mc-label">About Me</span>
+    <div class="mc-card">
+      <p class="about-txt">Tengo formación técnica en desarrollo, diseño y experiencia de usuario. Durante años entendí cómo funcionan los sistemas, los procesos y la interacción entre las personas y la tecnología.<br><br>Con el tiempo descubrí que muchas PYMEs operan con procesos manuales, información dispersa y tareas repetitivas que limitan su crecimiento. Por eso decidí crear <em>Inovit</em>.<br><br>Hoy ayudo a empresas a detectar cuellos de botella y construir soluciones tecnológicas que les permitan <b>trabajar mejor</b>, tomar mejores decisiones y crecer de forma sostenible.</p>
+      <div class="stats-row">
+        <div><span class="stat-v" data-target="2" data-suffix="">0</span><span class="stat-l">Grados acad.</span></div>
+        <div><span class="stat-v" data-target="4" data-suffix="">0</span><span class="stat-l">Áreas de enfoque</span></div>
+        <div><span class="stat-v" data-target="1" data-suffix="">0</span><span class="stat-l">Caso en proceso</span></div>
+        <div><span class="stat-v" data-target="0" data-suffix="">0</span><span class="stat-l">Casos de éxito</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mc-section reveal" id="sec-inovit">
+    <span class="mc-label">Inovit</span>
+    <div class="mc-card">
+      <p class="about-txt"><b style="font-size:.95rem;letter-spacing:.5px">INOVIT</b><br><em>Tecnología y optimización para PYMEs.</em><br><br>Inovit nace con el objetivo de ayudar a pequeñas y medianas empresas a adoptar tecnología, automatización e inteligencia artificial de forma práctica y alineada a sus necesidades reales.<br><br><b>No vendemos herramientas. Resolvemos problemas.</b></p>
+    </div>
+  </div>
+
+  <div class="mc-section reveal" id="sec-conf">
+    <span class="mc-label">Empresas que confían en este proceso</span>
+    <div class="ref-grid">
+      <div class="ref-card">
+        <div class="ref-name">Zona Sport</div>
+        <div class="ref-info">Empresa participante en el primer proceso de análisis y optimización empresarial desarrollado por Inovit.<br><span style="opacity:.55">Este espacio crecerá conforme más empresas se sumen al proceso.</span></div>
+      </div>
+    </div>
+  </div>
+
+</main>
+</div>
+<div class="cv-footer">Miguel Angel Silva Soto &nbsp;·&nbsp; Pátzcuaro, Michoacán &nbsp;·&nbsp; 2026</div>
+</div>
+
+
+
+<script>
+function typeText(el,text,speed=26){
+  if(el._typeTimer)clearInterval(el._typeTimer);
+  el.innerHTML='<span class="type-txt"></span><span class="type-cursor"></span>';
+  const txtEl=el.querySelector('.type-txt');
+  let i=0;
+  el._typeTimer=setInterval(()=>{
+    txtEl.textContent=text.slice(0,++i);
+    if(i>=text.length)clearInterval(el._typeTimer);
+  },speed);
+}
+
+typeText(document.getElementById('disc-cur'),'EMPRENDEDOR · TECNOLOGÍA · OPTIMIZACIÓN EMPRESARIAL',24);
+
+// ── contadores animados ──
+function countTo(el,target,suffix='',duration=900){
+  const start=performance.now();
+  function step(now){
+    const p=Math.min((now-start)/duration,1);
+    const eased=1-Math.pow(1-p,3);
+    el.textContent=Math.round(target*eased)+suffix;
+    if(p<1)requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+function initStatsCounter(){
+  const row=document.querySelector('.stats-row');
+  if(!row)return;
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach(en=>{
+      if(en.isIntersecting){
+        row.querySelectorAll('.stat-v').forEach(sp=>countTo(sp,parseInt(sp.dataset.target,10),sp.dataset.suffix||'',1100));
+        obs.unobserve(row);
+      }
+    });
+  },{threshold:.4});
+  obs.observe(row);
+}
+initStatsCounter();
+
+// ── barras de skill animadas ──
+function initSkillBars(){
+  const fills=document.querySelectorAll('.skfill');
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach(en=>{
+      if(en.isIntersecting){
+        en.target.style.width=en.target.dataset.w+'%';
+        obs.unobserve(en.target);
+      }
+    });
+  },{threshold:.4});
+  fills.forEach(f=>obs.observe(f));
+}
+initSkillBars();
+
+// ── Cursor (con easing e interacción) ──
+if(window.matchMedia('(pointer:fine)').matches){
+  const cur=document.getElementById('cur'),cdot=document.getElementById('cdot');
+  let mx=0,my=0,cx=0,cy=0;
+  document.addEventListener('mousemove',e=>{mx=e.clientX;my=e.clientY;cdot.style.left=mx+'px';cdot.style.top=my+'px'});
+  (function loop(){cx+=(mx-cx)*.14;cy+=(my-cy)*.14;cur.style.left=cx+'px';cur.style.top=cy+'px';requestAnimationFrame(loop)})();
+  document.addEventListener('mouseover',e=>{
+    if(e.target.closest('a,button,.rchip,.ref-card,.job-card,.sb-icon')){cur.style.transform='translate(-50%,-50%) scale(1.9)';cur.style.background='rgba(0,212,255,.08)';}
+    else{cur.style.transform='translate(-50%,-50%) scale(1)';cur.style.background='transparent';}
+  });
+} else {
+  document.getElementById('cur').style.display='none';
+  document.getElementById('cdot').style.display='none';
+}
+
+// ── fondo de partículas (mejorado: brillo, parpadeo, cometas, interacción con mouse) ──
+(function(){
+  const cv=document.getElementById('bgc'),ctx=cv.getContext('2d');
+  let W,H,pts=[],comets=[],mouse={x:-9999,y:-9999};
+  function resize(){W=cv.width=innerWidth;H=cv.height=innerHeight;}
+  window.addEventListener('resize',resize);resize();
+  const N=Math.min(90,Math.floor(W*H/18000));
+  for(let i=0;i<N;i++){
+    pts.push({
+      x:Math.random()*W,y:Math.random()*H,
+      vx:(Math.random()-.5)*.22,vy:(Math.random()-.5)*.22,
+      r:Math.random()*1.5+.7,
+      phase:Math.random()*Math.PI*2
+    });
+  }
+  window.addEventListener('mousemove',e=>{mouse.x=e.clientX;mouse.y=e.clientY;});
+  window.addEventListener('mouseleave',()=>{mouse.x=-9999;mouse.y=-9999;});
+
+  function maybeSpawnComet(){
+    if(Math.random()<0.006 && comets.length<2){
+      const fromLeft=Math.random()<0.5;
+      comets.push({
+        x:fromLeft?-50:W+50,
+        y:Math.random()*H*0.55,
+        vx:(fromLeft?1:-1)*(Math.random()*4+5),
+        vy:Math.random()*2+1.4,
+        life:0,max:75+Math.random()*40
+      });
+    }
+  }
+
+  function loop(t){
+    ctx.clearRect(0,0,W,H);
+    const time=(t||0)*0.001;
+
+    for(let i=0;i<pts.length;i++){
+      for(let j=i+1;j<pts.length;j++){
+        const dx=pts[i].x-pts[j].x,dy=pts[i].y-pts[j].y,d=Math.sqrt(dx*dx+dy*dy);
+        if(d<115){
+          ctx.beginPath();ctx.moveTo(pts[i].x,pts[i].y);ctx.lineTo(pts[j].x,pts[j].y);
+          ctx.strokeStyle=`rgba(0,212,255,${(1-d/115)*.16})`;ctx.lineWidth=1;ctx.stroke();
+        }
+      }
+    }
+
+    for(const p of pts){
+      p.x+=p.vx;p.y+=p.vy;
+      if(p.x<0||p.x>W)p.vx*=-1;
+      if(p.y<0||p.y>H)p.vy*=-1;
+      const dx=p.x-mouse.x,dy=p.y-mouse.y,d=Math.sqrt(dx*dx+dy*dy);
+      if(d<90){const f=(90-d)/90*.6;p.x+=dx/(d||1)*f;p.y+=dy/(d||1)*f;}
+      const twinkle=0.42+Math.sin(time*2+p.phase)*0.26;
+      const rad=p.r*(1+Math.sin(time+p.phase)*0.18);
+      const glow=ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,rad*5);
+      glow.addColorStop(0,`rgba(0,225,255,${twinkle*.55})`);
+      glow.addColorStop(1,'rgba(0,225,255,0)');
+      ctx.beginPath();ctx.arc(p.x,p.y,rad*5,0,6.283);ctx.fillStyle=glow;ctx.fill();
+      ctx.beginPath();ctx.arc(p.x,p.y,rad,0,6.283);ctx.fillStyle=`rgba(200,247,255,${Math.min(twinkle+.25,1)})`;ctx.fill();
+    }
+
+    maybeSpawnComet();
+    comets.forEach(c=>{
+      c.x+=c.vx;c.y+=c.vy;c.life++;
+      const a=Math.max(0,1-c.life/c.max);
+      ctx.beginPath();ctx.moveTo(c.x,c.y);ctx.lineTo(c.x-c.vx*7,c.y-c.vy*7);
+      ctx.strokeStyle=`rgba(0,230,255,${a*.85})`;ctx.lineWidth=2;ctx.stroke();
+      ctx.beginPath();ctx.arc(c.x,c.y,2,0,6.283);ctx.fillStyle=`rgba(255,255,255,${a})`;ctx.fill();
+    });
+    comets=comets.filter(c=>c.life<c.max&&c.x>-100&&c.x<W+100);
+
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+})();
+
+// ── onda al hacer clic ──
+document.addEventListener('click',e=>{
+  const outer=document.createElement('div');
+  outer.className='click-ripple';
+  outer.style.left=e.clientX+'px';outer.style.top=e.clientY+'px';
+  document.body.appendChild(outer);
+  const inner=document.createElement('div');
+  inner.className='click-ripple inner';
+  inner.style.left=e.clientX+'px';inner.style.top=e.clientY+'px';
+  document.body.appendChild(inner);
+  setTimeout(()=>{outer.remove();inner.remove();},700);
+});
+
+// ── Mobile scaling (idéntico al CV original) ──
+function scaleMobile(){
+  const page=document.querySelector('.cv-page');
+  if(!page) return;
+  if(window.visualViewport && Math.abs(window.visualViewport.scale-1)>0.05) return;
+  const TARGET=756;
+  const vw=window.innerWidth;
+  if(vw<TARGET){
+    page.style.zoom=(vw/TARGET).toFixed(3);
+    page.style.margin='0.25rem auto';
+  } else {
+    page.style.zoom='';
+    page.style.margin='1.5rem auto';
+  }
+}
+window.addEventListener('resize',scaleMobile);
+if(window.visualViewport){window.visualViewport.addEventListener('resize',scaleMobile);}
+setTimeout(scaleMobile,150);
+
+// ── reveal al hacer scroll ──
+function initReveal(){
+  const els=document.querySelectorAll('.reveal');
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach(en=>{
+      if(en.isIntersecting){en.target.classList.add('visible');obs.unobserve(en.target);}
+    });
+  },{threshold:.12});
+  els.forEach(e=>obs.observe(e));
+}
+initReveal();
+
+// ── nav lateral con sección activa ──
+function initSideNav(){
+  const dots=document.querySelectorAll('.nav-dot');
+  if(!dots.length)return;
+  const ids=['sec-about','sec-inovit','sec-conf'];
+  const secs=ids.map(id=>document.getElementById(id)).filter(Boolean);
+  const obs=new IntersectionObserver(entries=>{
+    entries.forEach(en=>{
+      if(en.isIntersecting){dots.forEach(d=>d.classList.toggle('active',d.dataset.target===en.target.id));}
+    });
+  },{rootMargin:'-35% 0px -50% 0px',threshold:0});
+  secs.forEach(s=>obs.observe(s));
+}
+initSideNav();
+
+// ── barra de progreso de scroll ──
+function updateScrollProgress(){
+  const sp=document.getElementById('scrollProgress');
+  if(!sp)return;
+  const h=document.documentElement;
+  const max=h.scrollHeight-h.clientHeight;
+  sp.style.width=(max>0?(h.scrollTop/max*100):0)+'%';
+}
+window.addEventListener('scroll',updateScrollProgress,{passive:true});
+updateScrollProgress();
+
+// ── tilt 3D + glow + botones magnéticos (solo con mouse) ──
+if(window.matchMedia('(pointer:fine)').matches){
+  const TILT_SEL='.job-card,.ref-card,.mc-card';
+  const MAG_SEL='.fab,.sb-icon,.rchip';
+  let tiltActive=null;
+  document.addEventListener('pointermove',e=>{
+    const card=e.target.closest(TILT_SEL);
+    if(card!==tiltActive){
+      if(tiltActive){tiltActive.style.transform='';tiltActive.classList.remove('tilt-glow');}
+      tiltActive=card;
+      if(tiltActive)tiltActive.classList.add('tilt-glow');
+    }
+    if(card){
+      const r=card.getBoundingClientRect();
+      const px=(e.clientX-r.left)/r.width-.5;
+      const py=(e.clientY-r.top)/r.height-.5;
+      card.style.transform=`perspective(700px) rotateX(${(-py*6).toFixed(2)}deg) rotateY(${(px*6).toFixed(2)}deg)`;
+    }
+    document.querySelectorAll(MAG_SEL).forEach(el=>{
+      const r=el.getBoundingClientRect();
+      const ecx=r.left+r.width/2,ecy=r.top+r.height/2;
+      const dx=e.clientX-ecx,dy=e.clientY-ecy;
+      const dist=Math.hypot(dx,dy);
+      const radius=55;
+      if(dist<radius){
+        const s=(1-dist/radius)*9;
+        el.style.transform=`translate(${(dx/dist*s).toFixed(1)}px,${(dy/dist*s).toFixed(1)}px)`;
+      } else if(el.style.transform){
+        el.style.transform='';
+      }
+    });
+  });
+}
+</script>
+</body>
+</html>
